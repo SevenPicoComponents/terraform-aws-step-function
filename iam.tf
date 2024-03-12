@@ -3,11 +3,6 @@ locals {
   role_arn         = local.create_role ? one(aws_iam_role.default[*].arn) : var.existing_iam_role_arn
   role_name        = var.role_name != null && var.role_name != "" ? var.role_name : module.context.id
   role_description = var.role_description != null && var.role_description != "" ? var.role_description : local.role_name
-  aws_region       = one(data.aws_region.current[*].name)
-}
-
-data "aws_region" "current" {
-  count = local.create_role ? 1 : 0
 }
 
 data "aws_iam_policy_document" "assume_role" {
@@ -19,7 +14,7 @@ data "aws_iam_policy_document" "assume_role" {
 
     principals {
       type        = "Service"
-      identifiers = ["states.${local.aws_region}.amazonaws.com"]
+      identifiers = ["states.amazonaws.com"]
     }
   }
 }
