@@ -9,6 +9,7 @@ data "aws_iam_policy_document" "assume_role" {
   count = local.create_role ? 1 : 0
 
   statement {
+    sid     = "AllowStepFunctionsAssumeRole"
     effect  = "Allow"
     actions = ["sts:AssumeRole"]
 
