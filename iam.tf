@@ -1,7 +1,7 @@
 locals {
   create_role      = local.enabled && (var.existing_iam_role_arn == null || var.existing_iam_role_arn == "")
   role_arn         = local.create_role ? one(aws_iam_role.default[*].arn) : var.existing_iam_role_arn
-  role_name        = var.role_name != null && var.role_name != "" ? var.role_name : module.this.id
+  role_name        = var.role_name != null && var.role_name != "" ? var.role_name : module.context.id
   role_description = var.role_description != null && var.role_description != "" ? var.role_description : local.role_name
   aws_region       = one(data.aws_region.current[*].name)
 }
@@ -34,7 +34,7 @@ resource "aws_iam_role" "default" {
   permissions_boundary  = var.role_permissions_boundary
   assume_role_policy    = data.aws_iam_policy_document.assume_role[0].json
 
-  tags = module.this.tags
+  tags = module.context.tags
 }
 
 data "aws_iam_policy_document" "default" {
@@ -88,7 +88,7 @@ resource "aws_iam_policy" "default" {
   name   = local.role_name
   policy = data.aws_iam_policy_document.default[0].json
 
-  tags = module.this.tags
+  tags = module.context.tags
 }
 
 resource "aws_iam_policy_attachment" "default" {

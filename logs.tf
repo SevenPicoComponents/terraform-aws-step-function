@@ -11,7 +11,7 @@ module "logs_label" {
 
   attributes = ["logs"]
 
-  context = module.this.context
+  context = module.context.self
 }
 
 data "aws_iam_policy_document" "logs" {

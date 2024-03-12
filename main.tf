@@ -1,6 +1,6 @@
 locals {
-  enabled            = module.this.enabled
-  step_function_name = var.step_function_name != null && var.step_function_name != "" ? var.step_function_name : module.this.id
+  enabled            = module.context.enabled
+  step_function_name = var.step_function_name != null && var.step_function_name != "" ? var.step_function_name : module.context.id
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sfn_state_machine
@@ -29,5 +29,5 @@ resource "aws_sfn_state_machine" "default" {
     }
   }
 
-  tags = module.this.tags
+  tags = module.context.tags
 }

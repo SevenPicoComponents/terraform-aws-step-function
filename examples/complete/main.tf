@@ -1,5 +1,5 @@
 locals {
-  enabled = module.this.enabled
+  enabled = module.context.enabled
 
   logging_configuration = {
     include_execution_data = true
@@ -108,7 +108,7 @@ module "step_function" {
   definition                             = local.definition
   iam_policies                           = local.iam_policies
 
-  context = module.this.context
+  context = module.context.context
 }
 
 module "sns" {
@@ -119,13 +119,13 @@ module "sns" {
   fifo_topic         = true
   fifo_queue_enabled = true
 
-  context = module.this.context
+  context = module.context.context
 }
 
 resource "aws_sqs_queue" "default" {
   count = local.enabled ? 1 : 0
 
-  name                       = module.this.id
+  name                       = module.context.id
   fifo_queue                 = false
   visibility_timeout_seconds = 30
   message_retention_seconds  = 86400
@@ -133,5 +133,5 @@ resource "aws_sqs_queue" "default" {
   delay_seconds              = 90
   receive_wait_time_seconds  = 10
 
-  tags = module.this.tags
+  tags = module.context.tags
 }
