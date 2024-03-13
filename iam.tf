@@ -15,7 +15,7 @@ data "aws_iam_policy_document" "assume_role" {
 
     principals {
       type        = "Service"
-      identifiers = ["states.amazonaws.com"]
+      identifiers = ["states.${local.region}.amazonaws.com"]
     }
   }
 }
