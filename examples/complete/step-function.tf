@@ -104,7 +104,7 @@ module "step_function" {
   logging_configuration                  = local.logging_configuration
   definition                             = local.definition
   policy_description                     = "${module.context.id} role policy"
-  policy_documents                       = module.context.enabled ? data.aws_iam_policy_document.iam_policies[0].json : []
+  policy_documents                       = module.context.enabled ? [data.aws_iam_policy_document.iam_policies[0].json] : []
   instance_profile_enabled               = false
 }
 
