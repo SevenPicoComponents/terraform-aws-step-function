@@ -116,7 +116,7 @@ module "sns" {
   fifo_topic         = true
   fifo_queue_enabled = true
 
-  context = module.context.self
+  context = module.context.legacy
 }
 
 
