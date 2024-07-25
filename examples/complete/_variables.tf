@@ -1,8 +1,3 @@
-variable "region" {
-  type        = string
-  description = "AWS region"
-}
-
 variable "step_function_name" {
   type        = string
   description = "The name of the Step Function. If not provided, a name will be generated from the context"

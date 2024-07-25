@@ -12,10 +12,11 @@ module "logs_label" {
   attributes = ["logs"]
 
   context = module.context.self
+  enabled = module.context.enabled && local.logging_enabled
 }
 
 data "aws_iam_policy_document" "logs" {
-  count = local.create_role && local.logging_enabled ? 1 : 0
+  count = module.logs_label.enabled ? 1 : 0
 
   statement {
     effect = "Allow"
@@ -33,23 +34,6 @@ data "aws_iam_policy_document" "logs" {
 
     resources = ["*"]
   }
-}
-
-resource "aws_iam_policy" "logs" {
-  count = local.create_role && local.logging_enabled ? 1 : 0
-
-  name   = local.cloudwatch_log_name
-  policy = data.aws_iam_policy_document.logs[0].json
-
-  tags = module.logs_label.tags
-}
-
-resource "aws_iam_policy_attachment" "logs" {
-  count = local.create_role && local.logging_enabled ? 1 : 0
-
-  name       = local.cloudwatch_log_name
-  roles      = [aws_iam_role.default[0].name]
-  policy_arn = aws_iam_policy.logs[0].arn
 }
 
 resource "aws_cloudwatch_log_group" "logs" {

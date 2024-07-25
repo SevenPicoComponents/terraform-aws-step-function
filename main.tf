@@ -8,7 +8,7 @@ resource "aws_sfn_state_machine" "default" {
 
   name       = local.step_function_name
   type       = upper(var.type)
-  role_arn   = local.role_arn
+  role_arn   = module.iam_role.arn
   definition = jsonencode(var.definition)
 
   dynamic "logging_configuration" {

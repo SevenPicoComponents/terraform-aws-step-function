@@ -1,96 +1,41 @@
 locals {
-  create_role      = module.context.enabled && (var.existing_iam_role_arn == null || var.existing_iam_role_arn == "")
-  role_arn         = local.create_role ? one(aws_iam_role.default[*].arn) : var.existing_iam_role_arn
-  role_name        = var.role_name != null && var.role_name != "" ? var.role_name : module.context.id
-  role_description = var.role_description != null && var.role_description != "" ? var.role_description : local.role_name
-}
-
-data "aws_iam_policy_document" "assume_role" {
-  count = local.create_role ? 1 : 0
-
-  statement {
-    sid     = "AllowStepFunctionsAssumeRole"
-    effect  = "Allow"
-    actions = ["sts:AssumeRole"]
-
-    principals {
-      type        = "Service"
-      identifiers = ["states.${local.region}.amazonaws.com"]
-    }
+  default_principals = {
+    Service = [
+      "states.${local.region}.amazonaws.com"
+    ]
   }
+
+  policy_documents = concat(
+    var.policy_documents,
+    module.logs_label.enabled ? [data.aws_iam_policy_document.logs[0].json] : []
+  )
 }
 
-resource "aws_iam_role" "default" {
-  count = local.create_role ? 1 : 0
-
-  name                  = local.role_name
-  description           = local.role_description
-  path                  = var.role_path
-  force_detach_policies = var.role_force_detach_policies
-  permissions_boundary  = var.role_permissions_boundary
-  assume_role_policy    = data.aws_iam_policy_document.assume_role[0].json
-
-  tags = module.context.tags
+module "iam_role_context" {
+  source     = "registry.terraform.io/SevenPico/context/null"
+  version    = "2.0.0"
+  context    = module.context.self
+  attributes = ["role"]
 }
 
-data "aws_iam_policy_document" "default" {
-  count = local.create_role ? 1 : 0
+module "iam_role" {
+  source  = "registry.terraform.io/SevenPicoForks/iam-role/aws"
+  version = "2.0.0"
+  context = module.iam_role_context.self
 
-  dynamic "statement" {
-    for_each = var.iam_policies
-
-    content {
-      sid           = statement.key
-      effect        = statement.value.effect
-      actions       = lookup(statement.value, "actions", [])
-      not_actions   = lookup(statement.value, "not_actions", [])
-      resources     = lookup(statement.value, "resources", [])
-      not_resources = lookup(statement.value, "not_resources", [])
-
-      dynamic "principals" {
-        for_each = lookup(statement.value, "principals", null) != null ? statement.value.principals : []
-
-        content {
-          identifiers = principals.value.identifiers
-          type        = principals.value.type
-        }
-      }
-
-      dynamic "not_principals" {
-        for_each = lookup(statement.value, "not_principals", null) != null ? statement.value.not_principals : []
-
-        content {
-          identifiers = not_principals.value.identifiers
-          type        = not_principals.value.type
-        }
-      }
-
-      dynamic "condition" {
-        for_each = lookup(statement.value, "condition", null) != null ? statement.value.condition : []
-
-        content {
-          test     = condition.value.test
-          variable = condition.value.variable
-          values   = condition.value.values
-        }
-      }
-    }
-  }
-}
-
-resource "aws_iam_policy" "default" {
-  count = local.create_role ? 1 : 0
-
-  name   = local.role_name
-  policy = data.aws_iam_policy_document.default[0].json
-
-  tags = module.context.tags
-}
-
-resource "aws_iam_policy_attachment" "default" {
-  count = local.create_role ? 1 : 0
-
-  name       = local.role_name
-  roles      = [aws_iam_role.default[0].name]
-  policy_arn = aws_iam_policy.default[0].arn
+  assume_role_actions      = var.assume_role_actions
+  assume_role_conditions   = var.assume_role_conditions
+  instance_profile_enabled = var.instance_profile_enabled
+  managed_policy_arns      = var.managed_policy_arns
+  max_session_duration     = var.max_session_duration
+  path                     = var.role_path
+  permissions_boundary     = var.role_permissions_boundary
+  policy_description       = var.policy_description
+  policy_document_count    = length(local.policy_documents)
+  policy_documents         = local.policy_documents
+  principals               = merge(local.default_principals, var.principals)
+  role_description         = var.role_description
+  tags                     = module.context.tags
+  tags_enabled             = var.tags_enabled
+  use_fullname             = var.use_fullname
 }
