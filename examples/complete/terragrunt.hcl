@@ -48,6 +48,8 @@ inputs = {
 
   # Module / Example Specific
 
+  tracing_enabled = true
+
 
 }
 
