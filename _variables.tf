@@ -81,12 +81,6 @@ variable "policy_documents" {
   default     = []
 }
 
-variable "policy_document_count" {
-  type        = number
-  description = "Number of policy documents (length of policy_documents list)"
-  default     = 2
-}
-
 variable "managed_policy_arns" {
   type        = set(string)
   description = "List of managed policies to attach to created role"
