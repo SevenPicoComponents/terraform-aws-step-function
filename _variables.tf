@@ -54,18 +54,12 @@ variable "cloudwatch_log_group_name" {
 variable "cloudwatch_log_group_retention_in_days" {
   type        = number
   description = "Specifies the number of days to retain log events in the Log Group. Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, and 3653"
-  default     = null
+  default     = 90
 }
 
 variable "cloudwatch_log_group_kms_key_id" {
   type        = string
   description = "The ARN of the KMS Key to use when encrypting log data"
-  default     = null
-}
-
-variable "role_name" {
-  type        = string
-  description = "Name of the created IAM role. If not provided, a name will be generated from the context"
   default     = null
 }
 
