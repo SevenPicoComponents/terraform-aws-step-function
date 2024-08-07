@@ -11,6 +11,10 @@ locals {
   )
 }
 
+
+# ------------------------------------------------------------------------------
+# Iam Role Context
+# ------------------------------------------------------------------------------
 module "iam_role_context" {
   source     = "registry.terraform.io/SevenPico/context/null"
   version    = "2.0.0"
@@ -18,6 +22,10 @@ module "iam_role_context" {
   attributes = ["role"]
 }
 
+
+# ------------------------------------------------------------------------------
+# Iam Role
+# ------------------------------------------------------------------------------
 module "iam_role" {
   source  = "registry.terraform.io/SevenPicoForks/iam-role/aws"
   version = "2.0.0"

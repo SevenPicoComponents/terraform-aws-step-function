@@ -5,6 +5,9 @@ locals {
   cloudwatch_log_name             = var.cloudwatch_log_group_name != null && var.cloudwatch_log_group_name != "" ? var.cloudwatch_log_group_name : module.logs_label.id
 }
 
+# ------------------------------------------------------------------------------
+# Cloudwatch Logs Context
+# ------------------------------------------------------------------------------
 module "logs_label" {
   source  = "SevenPico/context/null"
   version = "2.0.0"
@@ -15,6 +18,10 @@ module "logs_label" {
   enabled = module.context.enabled && local.logging_enabled
 }
 
+
+# ------------------------------------------------------------------------------
+# Cloudwatch Logs
+# ------------------------------------------------------------------------------
 data "aws_iam_policy_document" "logs" {
   count = module.logs_label.enabled ? 1 : 0
 

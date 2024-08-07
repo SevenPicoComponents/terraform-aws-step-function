@@ -2,6 +2,9 @@ locals {
   step_function_name = var.step_function_name != null && var.step_function_name != "" ? var.step_function_name : module.context.id
 }
 
+## ------------------------------------------------------------------------------
+## Step function
+## ------------------------------------------------------------------------------
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sfn_state_machine
 resource "aws_sfn_state_machine" "default" {
   count = module.context.enabled ? 1 : 0
