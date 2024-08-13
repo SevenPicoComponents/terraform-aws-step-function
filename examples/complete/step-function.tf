@@ -1,6 +1,4 @@
 locals {
-  enabled = module.this.enabled
-
   logging_configuration = {
     include_execution_data = true
     level                  = "ALL"
@@ -27,7 +25,7 @@ locals {
         "Type"     = "Task"
         "Resource" = "arn:aws:states:::sqs:sendMessage"
         "Parameters" = {
-          "QueueUrl"    = local.enabled ? aws_sqs_queue.default[0].url : ""
+          "QueueUrl"    = module.context.enabled ? aws_sqs_queue.default[0].url : ""
           "MessageBody" = "Hello World"
         }
         "Next" = "Publish to SNS"
@@ -63,52 +61,51 @@ locals {
   # https://docs.aws.amazon.com/step-functions/latest/dg/stepfunctions-iam.html
   # https://docs.aws.amazon.com/step-functions/latest/dg/eventbridge-iam.html
   # https://docs.aws.amazon.com/step-functions/latest/dg/activities-iam.html
-  iam_policies = {
-    # https://docs.aws.amazon.com/step-functions/latest/dg/sns-iam.html
-    "SnsAllowPublish" = {
-      effect = "Allow"
-      actions = [
-        "sns:Publish"
-      ]
-      resources = [
-        module.sns.sns_topic_arn
-      ]
-    }
+}
 
-    # https://docs.aws.amazon.com/step-functions/latest/dg/sqs-iam.html
-    "SqsAllowSendMessage" = {
-      effect = "Allow"
-      actions = [
-        "sqs:SendMessage"
-      ]
-      resources = [
-        local.enabled ? aws_sqs_queue.default[0].arn : ""
-      ]
-    }
+data "aws_iam_policy_document" "iam_policies" {
+  count = module.context.enabled ? 1 : 0
+  statement {
+    sid    = "SnsAllowPublish"
+    effect = "Allow"
+    actions = [
+      "sns:Publish"
+    ]
+    resources = [
+      module.sns.sns_topic_arn
+    ]
+  }
+
+  statement {
+    sid    = "SqsAllowSendMessage"
+    effect = "Allow"
+    actions = [
+      "sqs:SendMessage"
+    ]
+    resources = [
+      module.context.enabled ? aws_sqs_queue.default[0].arn : "*"
+    ]
   }
 }
 
 module "step_function" {
-  source = "../../"
+  source  = "../../"
+  context = module.context.self
 
   type                                   = var.type
   step_function_name                     = var.step_function_name
   tracing_enabled                        = var.tracing_enabled
-  existing_aws_cloudwatch_log_group_arn  = var.existing_aws_cloudwatch_log_group_arn
-  cloudwatch_log_group_name              = var.cloudwatch_log_group_name
-  cloudwatch_log_group_retention_in_days = var.cloudwatch_log_group_retention_in_days
-  cloudwatch_log_group_kms_key_id        = var.cloudwatch_log_group_kms_key_id
-  existing_iam_role_arn                  = var.existing_iam_role_arn
-  role_name                              = var.role_name
-  role_description                       = var.role_description
-  role_path                              = var.role_path
-  role_force_detach_policies             = var.role_force_detach_policies
-  role_permissions_boundary              = var.role_permissions_boundary
+  cloudwatch_log_group_name              = null
+  cloudwatch_log_group_retention_in_days = 90
+  cloudwatch_log_group_kms_key_id        = null
+  role_description                       = "${module.context.id} role"
+  role_path                              = "/"
+  role_permissions_boundary              = null
   logging_configuration                  = local.logging_configuration
   definition                             = local.definition
-  iam_policies                           = local.iam_policies
-
-  context = module.this.context
+  policy_description                     = "${module.context.id} role policy"
+  policy_documents                       = module.context.enabled ? [data.aws_iam_policy_document.iam_policies[0].json] : []
+  instance_profile_enabled               = false
 }
 
 module "sns" {
@@ -119,13 +116,14 @@ module "sns" {
   fifo_topic         = true
   fifo_queue_enabled = true
 
-  context = module.this.context
+  context = module.context.legacy
 }
 
-resource "aws_sqs_queue" "default" {
-  count = local.enabled ? 1 : 0
 
-  name                       = module.this.id
+resource "aws_sqs_queue" "default" {
+  count = module.context.enabled ? 1 : 0
+
+  name                       = module.context.id
   fifo_queue                 = false
   visibility_timeout_seconds = 30
   message_retention_seconds  = 86400
@@ -133,5 +131,5 @@ resource "aws_sqs_queue" "default" {
   delay_seconds              = 90
   receive_wait_time_seconds  = 10
 
-  tags = module.this.tags
+  tags = module.context.tags
 }
