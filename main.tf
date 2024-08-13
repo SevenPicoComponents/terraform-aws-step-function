@@ -1,15 +1,17 @@
 locals {
-  enabled            = module.this.enabled
-  step_function_name = var.step_function_name != null && var.step_function_name != "" ? var.step_function_name : module.this.id
+  step_function_name = var.step_function_name != null && var.step_function_name != "" ? var.step_function_name : module.context.id
 }
 
+## ------------------------------------------------------------------------------
+## Step function
+## ------------------------------------------------------------------------------
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sfn_state_machine
 resource "aws_sfn_state_machine" "default" {
-  count = local.enabled ? 1 : 0
+  count = module.context.enabled ? 1 : 0
 
   name       = local.step_function_name
   type       = upper(var.type)
-  role_arn   = local.role_arn
+  role_arn   = module.iam_role.arn
   definition = jsonencode(var.definition)
 
   dynamic "logging_configuration" {
@@ -23,11 +25,11 @@ resource "aws_sfn_state_machine" "default" {
   }
 
   dynamic "tracing_configuration" {
-    for_each = local.enabled && var.tracing_enabled ? [true] : []
+    for_each = module.context.enabled && var.tracing_enabled ? [true] : []
     content {
       enabled = true
     }
   }
 
-  tags = module.this.tags
+  tags = module.context.tags
 }
