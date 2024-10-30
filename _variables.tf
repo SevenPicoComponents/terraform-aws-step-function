@@ -159,3 +159,9 @@ variable "tags_enabled" {
   description = "Enable/disable tags on IAM roles and policies"
   default     = true
 }
+
+variable "policy_document_count" {
+  type        = number
+  description = "Number of policy documents (length of policy_documents list)"
+  default     = 1
+}

@@ -39,7 +39,7 @@ module "iam_role" {
   path                     = var.role_path
   permissions_boundary     = var.role_permissions_boundary
   policy_description       = var.policy_description
-  policy_document_count    = length(local.policy_documents)
+  policy_document_count    = var.policy_document_count
   policy_documents         = local.policy_documents
   principals               = merge(local.default_principals, var.principals)
   role_description         = var.role_description
