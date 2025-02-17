@@ -97,7 +97,7 @@ module "step_function" {
   tracing_enabled                        = var.tracing_enabled
   cloudwatch_log_group_name              = null
   cloudwatch_log_group_retention_in_days = 90
-  cloudwatch_log_group_kms_key_id        = null
+  cloudwatch_logs_kms_key_arn            = null
   role_description                       = "${module.context.id} role"
   role_path                              = "/"
   role_permissions_boundary              = null
