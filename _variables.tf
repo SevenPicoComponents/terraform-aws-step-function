@@ -57,7 +57,7 @@ variable "cloudwatch_log_group_retention_in_days" {
   default     = 90
 }
 
-variable "cloudwatch_log_group_kms_key_id" {
+variable "cloudwatch_logs_kms_key_arn" {
   type        = string
   description = "The ARN of the KMS Key to use when encrypting log data."
   default     = null
@@ -171,3 +171,10 @@ variable "cloudwatch_log_stream_names" {
   description = "List of logstream names for step function's default log group."
   default     = []
 }
+
+variable "policy_document_count" {
+  type        = number
+  description = "Number of policy documents (length of policy_documents list)"
+  default     = 1
+}
+
